@@ -4,7 +4,7 @@
 
 Built for the **NASA Space Apps Challenge 2026**: *Create Health Monitoring Software for Astronauts on Space Missions*.
 
- ![VitalOrbit overview](screenshot/overview.png) --
+ ![VitalOrbit overview](screenshot/overview.png) -->
 <!-- Live demo: https://your-demo-link -->
 
 ---
@@ -112,27 +112,46 @@ vitalorbit/
 
 ## Roadmap
 
-- [ ] Source citations from NASA HRP in each explainer
+- [x] Source citations from NASA HRP and CSA in each explainer
+- [ ] Radiation dose input (for example from a personal dosimeter)
+- [ ] Vision and balance self-checks (SANS, sensorimotor risks)
 - [ ] Camera or ultrasound image input
 - [ ] SQLite storage and multi-crew profiles
 - [ ] Wearable and sensor integration
 - [ ] Offline-first PWA for use with delayed communications
 - [ ] Clinically reviewed reference ranges
 
-## References
+## Sources and how they were used
 
-- NASA Human Research Program: [Hazards of human spaceflight](https://www.nasa.gov/hrp/hazards/), [Risks](https://www.nasa.gov/hrp/risks/), [Ongoing research](https://www.nasa.gov/hrp/ongoing-hrp-research/)
-- Canadian Space Agency: [Monitoring radiation and astronaut health](https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp), [Why we conduct science experiments in space](https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp)
+I read all five pages provided with the challenge and used them as follows. Explanations in the app paraphrase these pages and show a "Source" line on the body map.
+
+| Source | What it informed in VitalOrbit |
+|---|---|
+| [NASA HRP: The five hazards](https://www.nasa.gov/hrp/hazards/) | The five hazard names and descriptions (radiation, isolation and confinement, distance from Earth, gravity fields, hostile/closed environments) in the hazard list and body map |
+| [NASA HRP: Risks of human spaceflight](https://www.nasa.gov/hrp/risks/) | Which health risk each indicator relates to: immune responses (temperature), cardiovascular adaptations and hypoxia (heart rate, blood pressure, blood oxygen), inadequate food and nutrition (blood sugar), reduced fitness and bone changes (exercise), sleep and behavioral risks (sleep, mood) |
+| [NASA HRP: Ongoing research](https://www.nasa.gov/hrp/ongoing-hrp-research/) | Design inspiration only: consistent standard measures (Standard Measures), wrist-based sleep and activity tracking (ARCHeR), and sharing health data with the ground (Tempus Pro) |
+| [CSA: Monitoring radiation for astronaut health](https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp) | Radiation is a key challenge beyond Earth's atmosphere; used in the radiation hazard note |
+| [CSA: Why do we conduct science experiments in space?](https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp) | Moon and Mars missions bring more weightlessness, radiation, isolation, communication delays and less emergency medical help |
+
+**Not taken from these sources:** all reference ranges and thresholds, the drift rule, readiness score, XP system and the signal-delay figures are this project's own simplified choices. **Not monitored by the app:** radiation dose, eye and vision changes (SANS), balance and motion sickness, decompression sickness.
+
+## Use of Super Intelligence (SI)
+
+This project was built with assistance from Claude (Anthropic), a large language model.
+
+- **Code:** the React frontend and Python (FastAPI) backend were generated with Claude and reviewed by the team.
+- **Data:** the demo health data is synthetic and was generated with Claude's help.
+- **Images:** the app icon was designed with Claude (SI-generated).
+- **Text:** the README and descriptions were drafted with Claude and edited by the team.
+
+No NASA logos, flags or mission identifiers are used.
 
 ## Team
 
-Team Mooncake
+Team Stellar Seekers 2.0
 
 Team Members:
 - Amelia Wong Zhi Lin
 - Teo Yii Xian ([@Yii0909](https://github.com/Yii0909))
 - Che'nelle Alva
 - Hebe Tan Cze Yi
-
-
-
