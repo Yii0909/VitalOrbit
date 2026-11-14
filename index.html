@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VitalOrbit – Astronaut Self-Health Monitor</title>
+<style>
+:root{--bg:#0a0f1e;--card:#131a30;--tx:#e8ecf8;--mut:#8f9bbd;--bd:#26304f;--ok:#34d399;--wa:#fbbf24;--al:#f87171;--ac:#7aa2ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3f5fb;--card:#fff;--tx:#141a30;--mut:#5b6685;--bd:#d9deee;--ok:#059669;--wa:#b45309;--al:#dc2626;--ac:#3b5bdb}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:14px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+h1{font-size:20px;margin:0}h1 span{color:var(--ac)}h2{font-size:16px;margin:0 0 8px}
+select,input{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 9px;font:inherit;max-width:100%}
+nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px}
+nav button,.btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:999px;padding:7px 14px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button.on,.btn.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.k{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;cursor:pointer;border-left-width:5px}
+.k b{font-size:22px}.k small,.mut{color:var(--mut)}
+.top{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.ring{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;flex:none}
+.ring div{width:84px;height:84px;border-radius:50%;background:var(--card);display:grid;place-items:center;text-align:center;font-size:12px;color:var(--mut)}
+.ring b{display:block;font-size:26px;color:var(--tx);line-height:1}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;color:#0a0f1e}
+.ins{border-left:4px solid var(--bd);padding:6px 10px;margin:6px 0;background:var(--bg);border-radius:6px}
+.two{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:14px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+.body g{cursor:pointer}.body g path,.body g circle,.body g ellipse,.body g rect{stroke:var(--bd);stroke-width:2;transition:.2s}.body g:hover *,.body g.sel *{stroke:var(--ac);stroke-width:3}
+.body{animation:float 6s ease-in-out infinite;max-height:420px;width:100%}@keyframes float{50%{transform:translateY(-6px)}}
+@media(prefers-reduced-motion:reduce){.body{animation:none}}
+form{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+label{display:block;font-size:13px}label input{width:100%;margin-top:3px}label small{display:block;color:var(--mut);font-size:11.5px;line-height:1.3;margin-top:2px}
+.scroll{overflow-x:auto}.sec{display:none}.sec.on{display:block}
+.task{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)}
+details{border-bottom:1px solid var(--bd);padding:6px 0}summary{cursor:pointer;font-weight:600}
+.warn{background:var(--al);color:#fff;padding:10px 12px;border-radius:10px;margin-bottom:12px;font-weight:600}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ac);color:#fff;padding:10px 16px;border-radius:12px;z-index:20;display:none;max-width:90%;cursor:pointer;font-weight:600}
+textarea{width:100%;height:170px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px;font:12px/1.4 ui-monospace,Menlo,monospace}
+footer{color:var(--mut);font-size:12px;margin:16px 0}
+</style></head><body><main>
+<header><h1>🛰️ Vital<span>Orbit</span> <small class="mut" style="font-weight:400">self-health monitor</small></h1>
+<label style="display:flex;gap:6px;align-items:center">Location <select id="env"></select></label></header>
+<nav id="nav"></nav>
+<div id="warn"></div>
+
+<section class="sec on" id="s-home"><div class="card top" id="hero"></div><div class="grid" id="cards"></div><div class="card" style="margin-top:12px"><h2>What to do now</h2><div id="ins"></div></div></section>
+
+<section class="sec" id="s-body"><div class="card two"><svg class="body" viewBox="0 0 200 360" id="fig" role="img" aria-label="Clickable human body">
+<g data-r="head"><circle cx="100" cy="38" r="26"/></g>
+<g data-r="chest"><path d="M70 78h60q6 0 6 8v42H64V86q0-8 6-8z"/></g>
+<g data-r="gut"><path d="M64 130h72v50q0 12-12 12H76q-12 0-12-12z"/></g>
+<g data-r="arms"><rect x="36" y="82" width="22" height="110" rx="11"/><rect x="142" y="82" width="22" height="110" rx="11"/></g>
+<g data-r="legs"><rect x="70" y="200" width="28" height="140" rx="13"/><rect x="102" y="200" width="28" height="140" rx="13"/></g></svg>
+<div id="rp"></div></div></section>
+
+<section class="sec" id="s-log"><div class="card"><h2>Log today’s readings</h2><form id="form"></form><p><button class="btn pri" id="save" type="button">Save entry (+10 XP)</button> <span id="msg" class="mut"></span></p></div></section>
+
+<section class="sec" id="s-trend"><div class="card"><label>Indicator <select id="tsel"></select></label><div class="scroll"><svg id="chart" viewBox="0 0 640 250" style="min-width:520px;width:100%"></svg></div><p class="mut" id="tnote"></p></div></section>
+
+<section class="sec" id="s-game"><div class="card"><h2 id="lvl"></h2><div id="xpbar" style="height:10px;background:var(--bg);border-radius:9px;overflow:hidden"><div id="xpf" style="height:100%;background:var(--ac);width:0"></div></div><p class="mut" id="strk"></p><div id="tasks"></div><button class="btn" id="reset">Start new day</button></div>
+<div class="card"><h2>⏰ Measurement reminders</h2><div id="rems"></div><p><button class="btn" id="notif" type="button">Enable notifications</button> <button class="btn" id="testrem" type="button">Test reminder</button></p><p class="mut" style="margin:0">Reminders fire at the set time while this page is open.</p></div>
+<div class="card"><h2>📤 Flight surgeon export</h2><p class="mut">Summary of current status, 7-day readings, and flagged items.</p><textarea id="rpt" readonly></textarea><p><button class="btn pri" id="dtxt" type="button">Save report (.txt)</button> <button class="btn" id="dcsv" type="button">Save data (.csv)</button> <button class="btn" id="dcopy" type="button">Copy</button></p></div>
+<div class="card"><h2>Why these checks? The 5 spaceflight hazards</h2><div id="haz"></div></div></section>
+
+<div id="toast" role="status"></div><footer>Educational prototype for NASA Space Apps 2026. Ranges are simplified, adult, resting values. Not a medical device: follow your flight surgeon’s guidance. Data stays on this device.</footer></main>
+<script>
+const $=s=>document.querySelector(s);
+const I={
+hr:{n:'Heart rate',u:'bpm',w:[50,90],a:[40,105],bad:1,t:6,s:1,how:'Sit still 5 min, then use the wrist/chest sensor or count the pulse for 30 s ×2.',g:['Rest and hydrate, then re-measure in 15 min. Check caffeine, stress and cabin CO₂.','Stop activity and re-measure. With dizziness or chest pain, call the flight surgeon now.']},
+sys:{n:'Systolic BP',u:'mmHg',w:[100,129],a:[90,139],bad:1,t:8,s:1,how:'Seated, arm at heart level, after 5 min rest. Use the cuff on the same arm each day.',g:['Cut sodium, hydrate, re-measure after 10 min. Fluid shifts in microgravity can raise or lower BP.','Re-measure on the other arm, then contact the flight surgeon today.']},
+dia:{n:'Diastolic BP',u:'mmHg',w:[60,84],a:[55,89],bad:1,t:6,s:1,how:'Read together with systolic from the same cuff measurement.',g:['Re-measure after rest and log the trend.','Re-measure, then contact the flight surgeon today.']},
+spo2:{n:'Blood oxygen',u:'%',w:[95,100],a:[90,100],bad:-1,t:2,s:0,how:'Clip the pulse oximeter on a warm finger; hold still for 30 s.',g:['Warm your hands and re-measure. Check habitat O₂ and CO₂ readouts.','Check the air system and move to a well-ventilated module; call the flight surgeon.']},
+resp:{n:'Breathing rate',u:'/min',w:[12,20],a:[8,26],bad:1,t:3,s:0,how:'Count breaths for 60 s at rest while seated.',g:['Re-count at rest. Persistently raised rate can signal CO₂ build-up or infection.','Check cabin CO₂ and report to the flight surgeon.']},
+glucose:{n:'Blood sugar',u:'mg/dL',w:[70,125],a:[60,160],bad:1,t:12,s:1,how:'Fingerstick meter, fasting or 2 h after a meal. Note which.',g:['Review meal timing and sugar intake; re-test fasting tomorrow. Spaceflight can reduce insulin sensitivity.','Re-test now. With thirst, shakiness or confusion, contact the flight surgeon.']},
+temp:{n:'Body temp',u:'°C',w:[36.1,37.5],a:[35.5,38],bad:1,t:.3,s:1,how:'Forehead or ear thermometer, 20 min after exercise or a hot shower.',g:['Re-measure in 30 min. Check habitat temperature and hydration. Immune function shifts in flight.','Possible infection or heat stress. Limit contact with crew and call the flight surgeon.']},
+sleep:{n:'Sleep',u:'h',w:[7,12],a:[5.5,12],bad:-1,t:1,s:1,how:'Total hours from your sleep tracker or log, last 24 h.',g:['Protect an 8 h window, dim lights 1 h before bed, limit screens. Station orbits give 16 sunrises a day.','Fatigue risk: postpone critical tasks, ask for schedule relief, tell the flight surgeon.']},
+mood:{n:'Mood',u:'/5',w:[4,5],a:[3,5],bad:-1,t:1,s:1,how:'Rate 1 (very low) to 5 (great). Be honest; it is only for you and your surgeon.',g:['Schedule a call with family or a crewmate and some leisure time.','Reach out to the behavioral health team for a private conference now.']},
+ex:{n:'Exercise',u:'min',w:[30,999],a:[10,999],bad:-1,t:15,s:1,how:'Total minutes of resistive plus aerobic work today.',g:['Add a short session today. Exercise is the main defense against bone and muscle loss.','Make a 2-day catch-up plan; low loading speeds up bone loss.']}};
+const K=Object.keys(I);
+const R={
+head:{n:'Brain & behavior',k:['sleep','mood'],h:'Isolation, confinement and shifting light cycles',y:'Sleep loss, mood swings and cognitive slips are common on long missions, and they are often noticed by you first.'},
+chest:{n:'Heart & lungs',k:['hr','sys','dia','spo2','resp'],h:'Fluid shifts, altered gravity, closed-air environment',y:'Fluids move toward the head in microgravity and the heart deconditions. Cabin CO₂ can raise breathing rate.'},
+gut:{n:'Metabolism & nutrition',k:['glucose'],h:'Limited food system, stress, low activity',y:'Insulin sensitivity and appetite can change; poor nutrition worsens bone, immune and mood problems.'},
+arms:{n:'Immune & thermal',k:['temp'],h:'Space radiation and stress',y:'Immune cells behave differently in flight and dormant viruses can reactivate. Temperature is a quick check.'},
+legs:{n:'Bones & muscle',k:['ex'],h:'Reduced gravity loading',y:'Without gravity loading, bone density can fall roughly 1% per month in weight-bearing bones.'}};
+const E={iss:['Space station (LEO)','≈0 s','Near real-time contact with flight surgeons. Radiation exposure is lower inside Earth’s magnetic field.'],transit:['Deep-space transit','up to 22 min','Delayed comms: you are your own first responder. Higher radiation: watch for immune changes and nausea.'],moon:['Lunar base','≈1.3 s','One-sixth gravity and abrasive dust: watch eyes, lungs and joints.'],rover:['Rover / EVA','varies','Suit heat and dehydration: log temperature and hydration after every EVA.']};
+const H=[['Space radiation','DNA damage, cancer risk, immune and cardiovascular changes','Shielding, dosimeters, anti-oxidant rich diet. App tracks temperature and heart indicators.'],['Isolation & confinement','Sleep disruption, low mood, team tension','Sleep hygiene, crew check-ins, private calls home. App tracks sleep and mood.'],['Distance from Earth','Delayed medical help and resupply','Self-assessment and clear action steps. App flags when to call the surgeon.'],['Altered gravity','Bone and muscle loss, fluid shifts, cardiovascular deconditioning','2+ h/day exercise. App tracks exercise, heart rate and BP.'],['Hostile closed environment','CO₂ build-up, noise, microbes, heat','Air monitoring and hygiene. App tracks SpO₂, breathing rate and temperature.']];
+const T=[['Log vitals (auto-ticks when you save an entry)','10'],['30+ min resistive exercise','5'],['Hydrate (2 L)','5'],['Check habitat air and filters','5'],['Crew or family check-in','5']];
+const C=['var(--ok)','var(--wa)','var(--al)'],L=['Nominal','Watch','Action'];
+function seed(){const a=[];for(let d=1;d<=14;d++){const n=((d*7)%5)-2,l=Math.max(0,d-9);a.push({d,hr:63+n+l*2,sys:117+n+(d>8?(d-8):0),dia:76+n,spo2:98-(d>11?1:0),resp:14+(d>10?1:0),glucose:92+n*2+(d>11?10:0),temp:36.6+n*.05,sleep:+(7.5-(d>7?(d-7)*.25:0)).toFixed(1),mood:d>11?3:4,ex:45-(d>9?(d-9)*5:0)})}return a}
+let S={env:'iss',data:seed(),tasks:{}};
+try{const x=JSON.parse(localStorage.getItem('vo2')||'null');if(x)S=x}catch(e){}
+if(!S.rem)S.rem=[{n:'Fasting blood sugar',t:'07:30',on:false},{n:'Morning vitals: HR, BP, temp, SpO₂',t:'08:00',on:true},{n:'Exercise session',t:'17:00',on:true},{n:'Sleep and mood check-in',t:'21:00',on:true}];
+const save=()=>{try{localStorage.setItem('vo2',JSON.stringify(S))}catch(e){}};
+const st=(k,v)=>{const i=I[k];return v<i.a[0]||v>i.a[1]?2:v<i.w[0]||v>i.w[1]?1:0};
+const last=()=>S.data[S.data.length-1];
+const f=(k,v)=>k==='temp'?(+v).toFixed(1):v;
+function drift(k){const d=S.data;if(d.length<5)return 0;const l=d[d.length-1][k],p=d.slice(-5,-1).reduce((s,e)=>s+e[k],0)/4;return (l-p)*I[k].bad>=I[k].t?1:0}
+function tabs(){const t=[['home','Overview'],['body','Body map'],['log','Log'],['trend','Trends'],['game','Missions']];$('#nav').innerHTML=t.map(x=>`<button data-t="${x[0]}">${x[1]}</button>`).join('');$('#nav').onclick=e=>{if(e.target.dataset.t)show(e.target.dataset.t)}}
+function show(id){document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.id==='s-'+id));document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id))}
+function home(){const e=last(),ss=K.map(k=>st(k,e[k])),al=ss.filter(x=>x==2).length,wa=ss.filter(x=>x==1).length,sc=Math.max(0,100-18*al-7*wa-3*K.filter(drift).length),c=al?C[2]:wa?C[1]:C[0],env=E[S.env];
+$('#warn').innerHTML=al?`<div class="warn">⚠ ${al} indicator(s) need action. Contact the flight surgeon (signal delay ${env[1]}).</div>`:'';
+$('#hero').innerHTML=`<div class="ring" style="background:conic-gradient(${c} ${sc*3.6}deg,var(--bd) 0)"><div><span><b>${sc}</b>readiness</span></div></div><div><h2>Mission day ${e.d} · ${env[0]}</h2><p class="mut" style="margin:0">${env[2]}</p></div>`;
+$('#cards').innerHTML=K.map((k,j)=>`<div class="k" data-k="${k}" style="border-left-color:${C[ss[j]]}"><small>${I[k].n}</small><br><b>${f(k,e[k])}</b> <small>${I[k].u}</small><br><span class="tag" style="background:${C[ss[j]]}">${L[ss[j]]}</span> ${drift(k)?'<small title="Drifting the wrong way">↘ drift</small>':''}</div>`).join('');
+$('#cards').onclick=ev=>{const c=ev.target.closest('.k');if(c){$('#tsel').value=c.dataset.k;chart();show('trend')}};
+let h='';K.forEach((k,j)=>{if(ss[j])h+=`<div class="ins" style="border-color:${C[ss[j]]}"><b>${I[k].n} ${f(k,e[k])} ${I[k].u}:</b> ${I[k].g[ss[j]-1]}</div>`;else if(drift(k))h+=`<div class="ins" style="border-color:var(--wa)"><b>${I[k].n} is drifting:</b> still in range, but moving the wrong way over recent days. ${I[k].g[0]}</div>`});
+$('#ins').innerHTML=h||'<p class="mut">All indicators nominal. Keep up the routine.</p>'}
+function region(r){const e=last(),R0=R[r];document.querySelectorAll('#fig g').forEach(g=>g.classList.toggle('sel',g.dataset.r===r));
+$('#rp').innerHTML=`<h2>${R0.n}</h2><p><b>Hazard:</b> ${R0.h}<br><b>Why it matters:</b> ${R0.y}</p>`+R0.k.map(k=>{const s=st(k,e[k]);return `<div class="ins" style="border-color:${C[s]}"><b>${I[k].n}: ${f(k,e[k])} ${I[k].u}</b> <span class="tag" style="background:${C[s]}">${L[s]}</span><br><small class="mut">How to measure: ${I[k].how}</small>${s?`<br>${I[k].g[s-1]}`:''}</div>`}).join('')}
+function paint(){const e=last();document.querySelectorAll('#fig g').forEach(g=>{const w=Math.max(...R[g.dataset.r].k.map(k=>st(k,e[k])));g.querySelectorAll('*').forEach(n=>n.style.fill=C[w]);g.style.opacity=.85});$('#fig').onclick=ev=>{const g=ev.target.closest('g');if(g)region(g.dataset.r)}}
+function form(){const e=last();$('#form').innerHTML=`<label>Mission day<input id="f_d" type="number" value="${e.d+1}"></label>`+K.map(k=>`<label>${I[k].n} (${I[k].u})<input id="f_${k}" type="number" step="any" value="${e[k]}"><small>${I[k].how}</small></label>`).join('')}
+function chart(){const k=$('#tsel').value,i=I[k],d=S.data.slice(-21),v=d.map(e=>e[k]),lo=Math.min(...v,i.w[0]===0?0:Math.min(i.a[0],...v)),hi=Math.max(...v);let y0=Math.min(lo,i.w[0]),y1=Math.max(hi,Math.min(i.w[1],hi*1.15));if(y1===y0)y1=y0+1;const X=j=>50+j*(570/Math.max(1,d.length-1)),Y=x=>210-(x-y0)/(y1-y0)*180,b0=Y(Math.max(y0,i.w[0])),b1=Y(Math.min(y1,i.w[1]));
+$('#chart').innerHTML=`<rect x="50" y="${b1}" width="570" height="${b0-b1}" fill="var(--ok)" opacity=".15"/><line x1="50" y1="210" x2="620" y2="210" stroke="var(--bd)"/><text x="4" y="${Y(y1)+4}" fill="var(--mut)" font-size="11">${y1.toFixed(0)}</text><text x="4" y="214" fill="var(--mut)" font-size="11">${y0.toFixed(0)}</text><polyline fill="none" stroke="var(--ac)" stroke-width="2.5" points="${v.map((x,j)=>X(j)+','+Y(x)).join(' ')}"/>`+v.map((x,j)=>`<circle cx="${X(j)}" cy="${Y(x)}" r="5" fill="${C[st(k,x)]}"><title>Day ${d[j].d}: ${f(k,x)} ${i.u}</title></circle>`).join('')+d.map((e,j)=>j%2?'':`<text x="${X(j)}" y="232" text-anchor="middle" fill="var(--mut)" font-size="11">D${e.d}</text>`).join('');
+$('#tnote').textContent=`${i.n} (${i.u}). Green band is the nominal range. Hover points for values.`}
+function game(){const done=T.reduce((s,t,j)=>s+(j&&S.tasks[j]?+t[1]:0),0),xp=S.data.length*10+done+(S.bank||0)+S.data.filter(e=>K.every(k=>!st(k,e[k]))).length*5,lv=Math.floor(xp/150),names=['Cadet','Crew member','Flight engineer','Mission specialist','Commander'];
+$('#lvl').textContent=`${names[Math.min(lv,4)]} · ${xp} XP`;$('#xpf').style.width=(xp%150)/1.5+'%';
+let s=1,d=S.data;for(let j=d.length-1;j>0&&d[j].d-d[j-1].d===1;j--)s++;$('#strk').textContent=`🔥 ${s}-day logging streak. Earn XP for logging (+10), healthy days (+5) and daily tasks (+5).`;
+$('#tasks').innerHTML=T.map((t,j)=>`<label class="task"><input type="checkbox" data-t="${j}" ${S.tasks[j]?'checked':''} ${j==0?'disabled':''}> ${t[0]} <span class="mut">+${t[1]} XP</span></label>`).join('');
+$('#tasks').onchange=ev=>{const j=+ev.target.dataset.t;S.tasks[j]=ev.target.checked;save();game();toast(ev.target.checked?'+'+T[j][1]+' XP':'Task unchecked')};
+$('#haz').innerHTML=H.map(h=>`<details><summary>${h[0]}</summary><p><b>Effects:</b> ${h[1]}<br><b>Defense:</b> ${h[2]}</p></details>`).join('')}
+const fired={};
+function toast(m,s){const el=$('#toast');el.textContent=m;el.style.display='block';clearTimeout(toast.t);el.onclick=()=>el.style.display='none';if(!s)toast.t=setTimeout(()=>el.style.display='none',2500)}
+function alarm(m){toast('⏰ '+m+' (tap to dismiss)',1);try{if(window.Notification&&Notification.permission==='granted')new Notification('VitalOrbit',{body:m})}catch(e){}}
+function rem(){$('#rems').innerHTML=S.rem.map((r,j)=>`<label class="task"><input type="checkbox" data-r="${j}" ${r.on?'checked':''}> ${r.n} <input type="time" data-rt="${j}" value="${r.t}" style="margin-left:auto;width:auto"></label>`).join('');$('#rems').onchange=ev=>{const d=ev.target.dataset;if(d.r!==undefined)S.rem[d.r].on=ev.target.checked;if(d.rt!==undefined)S.rem[d.rt].t=ev.target.value;save()}}
+function rep(){const e=last(),d=S.data.slice(-7),v=E[S.env];let fl=K.filter(k=>st(k,e[k])||drift(k)).map(k=>`- ${I[k].n} ${f(k,e[k])} ${I[k].u}: ${st(k,e[k])?L[st(k,e[k])]+'. '+I[k].g[st(k,e[k])-1]:'Drifting the wrong way over recent days.'}`).join('\n');return `VITALORBIT HEALTH SUMMARY FOR FLIGHT SURGEON\nMission day ${e.d} | Location: ${v[0]} | Signal delay: ${v[1]}\n\nCURRENT STATUS\n`+K.map(k=>`- ${I[k].n}: ${f(k,e[k])} ${I[k].u} [${L[st(k,e[k])]}]${drift(k)?' (drifting)':''}`).join('\n')+`\n\nFLAGGED ITEMS\n${fl||'None'}\n\nLAST ${d.length} DAYS\nday,${K.join(',')}\n`+d.map(x=>x.d+','+K.map(k=>f(k,x[k])).join(',')).join('\n')+'\n\nSelf-reported by the crew member. Not diagnostic.'}
+function csv(){return 'day,'+K.join(',')+'\n'+S.data.map(x=>x.d+','+K.map(k=>f(k,x[k])).join(',')).join('\n')}
+function all(){home();paint();game();chart();rem();$('#rpt').value=rep()}
+$('#save').onclick=()=>{const e={d:+$('#f_d').value};let ok=true;K.forEach(k=>{const v=parseFloat($('#f_'+k).value);if(isNaN(v))ok=false;e[k]=v});if(!ok||!e.d){$('#msg').textContent='Please fill every field.';return}
+S.data=S.data.filter(x=>x.d!==e.d).concat(e).sort((a,b)=>a.d-b.d);S.tasks[0]=true;save();form();all();$('#msg').textContent='Saved.';toast('+10 XP · entry logged');show('home');scrollTo(0,0)};
+$('#reset').onclick=()=>{S.bank=(S.bank||0)+T.reduce((s,t,j)=>s+(j&&S.tasks[j]?+t[1]:0),0);S.tasks={};save();game();toast('New day started. XP kept')};
+$('#env').innerHTML=Object.keys(E).map(k=>`<option value="${k}">${E[k][0]}</option>`).join('');$('#env').value=S.env;$('#env').onchange=()=>{S.env=$('#env').value;save();home()};
+$('#tsel').innerHTML=K.map(k=>`<option value="${k}">${I[k].n}</option>`).join('');$('#tsel').onchange=chart;
+tabs();form();all();region('chest');show('home');
+setInterval(()=>{const n=new Date(),hm=n.toTimeString().slice(0,5),key=n.toDateString()+hm;S.rem.forEach((r,j)=>{if(r.on&&r.t===hm&&fired[j]!==key){fired[j]=key;alarm(r.n)}})},10000);
+$('#testrem').onclick=()=>alarm('Test reminder: log your vitals');
+$('#notif').onclick=()=>{try{Notification.requestPermission().then(p=>toast(p==='granted'?'Notifications on':'Notifications blocked: in-app alerts still work'))}catch(e){toast('Notifications unavailable here: in-app alerts still work')}};
+function dl(name,data){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data]));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Saved '+name)}catch(e){toast('Could not save: use Copy')}}
+$('#dtxt').onclick=()=>dl('vitalorbit-report-day'+last().d+'.txt',rep());
+$('#dcsv').onclick=()=>dl('vitalorbit-data.csv',csv());
+$('#dcopy').onclick=()=>{const t=$('#rpt');t.select();try{navigator.clipboard.writeText(t.value).then(()=>toast('Copied'),()=>{document.execCommand('copy');toast('Copied')})}catch(e){try{document.execCommand('copy');toast('Copied')}catch(x){}}};
+</script></body></html>
