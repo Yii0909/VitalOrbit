@@ -126,10 +126,12 @@ vitalorbit/
 
 ## Team
 
-<!-- Add team name and members -->
+Team Mooncake
+Team Members:
+Amelia Wong Zhi Lin
+Teo Yii Xian ([@Yii0909](https://github.com/Yii0909))
+Che'nelle Alva
+Hebe Tan Cze Yi
 
-Built by **Yii** ([@Yii0909](https://github.com/Yii0909)) for NASA Space Apps Challenge 2026, UTM.
 
-## License
 
-<!-- Choose one, e.g. MIT, and add a LICENSE file -->
