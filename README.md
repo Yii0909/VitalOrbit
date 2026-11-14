@@ -4,7 +4,7 @@
 
 Built for the **NASA Space Apps Challenge 2026**: *Create Health Monitoring Software for Astronauts on Space Missions*.
 
-<!-- Add a screenshot or GIF here: ![VitalOrbit overview](docs/overview.png) -->
+!-- Add a screenshot or GIF here: ![VitalOrbit overview](screenshot/overview.png) --
 <!-- Live demo: https://your-demo-link -->
 
 ---
@@ -127,11 +127,12 @@ vitalorbit/
 ## Team
 
 Team Mooncake
+
 Team Members:
-Amelia Wong Zhi Lin
-Teo Yii Xian ([@Yii0909](https://github.com/Yii0909))
-Che'nelle Alva
-Hebe Tan Cze Yi
+- Amelia Wong Zhi Lin
+- Teo Yii Xian ([@Yii0909](https://github.com/Yii0909))
+- Che'nelle Alva
+- Hebe Tan Cze Yi
 
 
 
