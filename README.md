@@ -110,17 +110,6 @@ vitalorbit/
 - Reminders fire only while the page is open.
 - Storage is a local JSON file, suitable for a single user.
 
-## Roadmap
-
-- [x] Source citations from NASA HRP and CSA in each explainer
-- [ ] Radiation dose input (for example from a personal dosimeter)
-- [ ] Vision and balance self-checks (SANS, sensorimotor risks)
-- [ ] Camera or ultrasound image input
-- [ ] SQLite storage and multi-crew profiles
-- [ ] Wearable and sensor integration
-- [ ] Offline-first PWA for use with delayed communications
-- [ ] Clinically reviewed reference ranges
-
 ## Sources and how they were used
 
 I read all five pages provided with the challenge and used them as follows. Explanations in the app paraphrase these pages and show a "Source" line on the body map.
@@ -151,7 +140,7 @@ No NASA logos, flags or mission identifiers are used.
 Team Stellar Seekers 2.0
 
 Team Members:
-- Amelia Wong Zhi Lin
 - Teo Yii Xian ([@Yii0909](https://github.com/Yii0909))
 - Che'nelle Alva
+- Amelia Wong Zhi Lin
 - Hebe Tan Cze Yi
