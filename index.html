@@ -54,7 +54,7 @@ footer{color:var(--mut);font-size:12px;margin:16px 0}
 <g data-r="legs"><rect x="70" y="200" width="28" height="140" rx="13"/><rect x="102" y="200" width="28" height="140" rx="13"/></g></svg>
 <div id="rp"></div></div></section>
 
-<section class="sec" id="s-log"><div class="card"><h2>Log today’s readings</h2><form id="form"></form><p><button class="btn pri" id="save" type="button">Save entry (+10 XP)</button> <span id="msg" class="mut"></span></p></div></section>
+<section class="sec" id="s-log"><div class="card"><h2>Log today’s readings</h2><form id="form"></form><p><button class="btn pri" id="save" type="button">Save entry (+10 XP)</button> <button class="btn" id="nd2" type="button">Start next day</button> <span id="msg" class="mut"></span></p></div></section>
 
 <section class="sec" id="s-trend"><div class="card"><label>Indicator <select id="tsel"></select></label><div class="scroll"><svg id="chart" viewBox="0 0 640 250" style="min-width:520px;width:100%"></svg></div><p class="mut" id="tnote"></p></div></section>
 
@@ -78,6 +78,7 @@ sleep:{n:'Sleep',u:'h',w:[7,12],a:[5.5,12],bad:-1,t:1,s:1,how:'Total hours from 
 mood:{n:'Mood',u:'/5',w:[4,5],a:[3,5],bad:-1,t:1,s:1,how:'Rate 1 (very low) to 5 (great). Be honest; it is only for you and your surgeon.',g:['Schedule a call with family or a crewmate and some leisure time.','Reach out to the behavioral health team for a private conference now.']},
 ex:{n:'Exercise',u:'min',w:[30,999],a:[10,999],bad:-1,t:15,s:1,how:'Total minutes of resistive plus aerobic work today.',g:['Add a short session today. Exercise is the main defense against bone and muscle loss.','Make a 2-day catch-up plan; low loading speeds up bone loss.']}};
 const K=Object.keys(I);
+const RG={hr:[20,220,1],sys:[60,220,1],dia:[30,140,1],spo2:[70,100,1],resp:[4,40,1],glucose:[30,500,1],temp:[30,43,.1],sleep:[0,24,.1],mood:[1,5,1],ex:[0,600,1]};
 const R={
 head:{n:'Brain & behavior',k:['sleep','mood'],h:'Isolation, confinement and shifting light cycles',y:'Sleep loss, mood swings and cognitive slips are common on long missions, and they are often noticed by you first.'},
 chest:{n:'Heart & lungs',k:['hr','sys','dia','spo2','resp'],h:'Fluid shifts, altered gravity, closed-air environment',y:'Fluids move toward the head in microgravity and the heart deconditions. Cabin CO₂ can raise breathing rate.'},
@@ -91,6 +92,7 @@ const C=['var(--ok)','var(--wa)','var(--al)'],L=['Nominal','Watch','Action'];
 function seed(){const a=[];for(let d=1;d<=14;d++){const n=((d*7)%5)-2,l=Math.max(0,d-9);a.push({d,hr:63+n+l*2,sys:117+n+(d>8?(d-8):0),dia:76+n,spo2:98-(d>11?1:0),resp:14+(d>10?1:0),glucose:92+n*2+(d>11?10:0),temp:36.6+n*.05,sleep:+(7.5-(d>7?(d-7)*.25:0)).toFixed(1),mood:d>11?3:4,ex:45-(d>9?(d-9)*5:0)})}return a}
 let S={env:'iss',data:seed(),tasks:{}};
 try{const x=JSON.parse(localStorage.getItem('vo2')||'null');if(x)S=x}catch(e){}
+if(!S.md)S.md=S.data[S.data.length-1].d+1;if(!S.hist)S.hist=[];
 if(!S.rem)S.rem=[{n:'Fasting blood sugar',t:'07:30',on:false},{n:'Morning vitals: HR, BP, temp, SpO₂',t:'08:00',on:true},{n:'Exercise session',t:'17:00',on:true},{n:'Sleep and mood check-in',t:'21:00',on:true}];
 const save=()=>{try{localStorage.setItem('vo2',JSON.stringify(S))}catch(e){}};
 const st=(k,v)=>{const i=I[k];return v<i.a[0]||v>i.a[1]?2:v<i.w[0]||v>i.w[1]?1:0};
@@ -101,7 +103,7 @@ function tabs(){const t=[['home','Overview'],['body','Body map'],['log','Log'],[
 function show(id){document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.id==='s-'+id));document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id))}
 function home(){const e=last(),ss=K.map(k=>st(k,e[k])),al=ss.filter(x=>x==2).length,wa=ss.filter(x=>x==1).length,sc=Math.max(0,100-18*al-7*wa-3*K.filter(drift).length),c=al?C[2]:wa?C[1]:C[0],env=E[S.env];
 $('#warn').innerHTML=al?`<div class="warn">⚠ ${al} indicator(s) need action. Contact the flight surgeon (signal delay ${env[1]}).</div>`:'';
-$('#hero').innerHTML=`<div class="ring" style="background:conic-gradient(${c} ${sc*3.6}deg,var(--bd) 0)"><div><span><b>${sc}</b>readiness</span></div></div><div><h2>Mission day ${e.d} · ${env[0]}</h2><p class="mut" style="margin:0">${env[2]}</p></div>`;
+$('#hero').innerHTML=`<div class="ring" style="background:conic-gradient(${c} ${sc*3.6}deg,var(--bd) 0)"><div><span><b>${sc}</b>readiness</span></div></div><div><h2>Mission day ${S.md} · ${env[0]}</h2><p class="mut" style="margin:0">${env[2]}</p></div>`;
 $('#cards').innerHTML=K.map((k,j)=>`<div class="k" data-k="${k}" style="border-left-color:${C[ss[j]]}"><small>${I[k].n}</small><br><b>${f(k,e[k])}</b> <small>${I[k].u}</small><br><span class="tag" style="background:${C[ss[j]]}">${L[ss[j]]}</span> ${drift(k)?'<small title="Drifting the wrong way">↘ drift</small>':''}</div>`).join('');
 $('#cards').onclick=ev=>{const c=ev.target.closest('.k');if(c){$('#tsel').value=c.dataset.k;chart();show('trend')}};
 let h='';K.forEach((k,j)=>{if(ss[j])h+=`<div class="ins" style="border-color:${C[ss[j]]}"><b>${I[k].n} ${f(k,e[k])} ${I[k].u}:</b> ${I[k].g[ss[j]-1]}</div>`;else if(drift(k))h+=`<div class="ins" style="border-color:var(--wa)"><b>${I[k].n} is drifting:</b> still in range, but moving the wrong way over recent days. ${I[k].g[0]}</div>`});
@@ -109,13 +111,13 @@ $('#ins').innerHTML=h||'<p class="mut">All indicators nominal. Keep up the routi
 function region(r){const e=last(),R0=R[r];document.querySelectorAll('#fig g').forEach(g=>g.classList.toggle('sel',g.dataset.r===r));
 $('#rp').innerHTML=`<h2>${R0.n}</h2><p><b>Hazard:</b> ${R0.h}<br><b>Why it matters:</b> ${R0.y}</p>`+R0.k.map(k=>{const s=st(k,e[k]);return `<div class="ins" style="border-color:${C[s]}"><b>${I[k].n}: ${f(k,e[k])} ${I[k].u}</b> <span class="tag" style="background:${C[s]}">${L[s]}</span><br><small class="mut">How to measure: ${I[k].how}</small>${s?`<br>${I[k].g[s-1]}`:''}</div>`}).join('')}
 function paint(){const e=last();document.querySelectorAll('#fig g').forEach(g=>{const w=Math.max(...R[g.dataset.r].k.map(k=>st(k,e[k])));g.querySelectorAll('*').forEach(n=>n.style.fill=C[w]);g.style.opacity=.85});$('#fig').onclick=ev=>{const g=ev.target.closest('g');if(g)region(g.dataset.r)}}
-function form(){const e=last();$('#form').innerHTML=`<label>Mission day<input id="f_d" type="number" value="${e.d+1}"></label>`+K.map(k=>`<label>${I[k].n} (${I[k].u})<input id="f_${k}" type="number" step="any" value="${e[k]}"><small>${I[k].how}</small></label>`).join('')}
+function form(){const e=last();$('#form').innerHTML=`<label>Mission day<input id="f_d" type="number" min="1" step="1" value="${S.md}"><small>${S.data.length} days logged. One entry per day: saving an existing day replaces it. Tap “Start next day” to move on.</small></label>`+K.map(k=>`<label>${I[k].n} (${I[k].u})<input id="f_${k}" type="number" min="${RG[k][0]}" max="${RG[k][1]}" step="${RG[k][2]}" value="${e[k]}"><small>Allowed ${RG[k][0]}–${RG[k][1]} ${I[k].u}. ${I[k].how}</small></label>`).join('')}
 function chart(){const k=$('#tsel').value,i=I[k],d=S.data.slice(-21),v=d.map(e=>e[k]),lo=Math.min(...v,i.w[0]===0?0:Math.min(i.a[0],...v)),hi=Math.max(...v);let y0=Math.min(lo,i.w[0]),y1=Math.max(hi,Math.min(i.w[1],hi*1.15));if(y1===y0)y1=y0+1;const X=j=>50+j*(570/Math.max(1,d.length-1)),Y=x=>210-(x-y0)/(y1-y0)*180,b0=Y(Math.max(y0,i.w[0])),b1=Y(Math.min(y1,i.w[1]));
 $('#chart').innerHTML=`<rect x="50" y="${b1}" width="570" height="${b0-b1}" fill="var(--ok)" opacity=".15"/><line x1="50" y1="210" x2="620" y2="210" stroke="var(--bd)"/><text x="4" y="${Y(y1)+4}" fill="var(--mut)" font-size="11">${y1.toFixed(0)}</text><text x="4" y="214" fill="var(--mut)" font-size="11">${y0.toFixed(0)}</text><polyline fill="none" stroke="var(--ac)" stroke-width="2.5" points="${v.map((x,j)=>X(j)+','+Y(x)).join(' ')}"/>`+v.map((x,j)=>`<circle cx="${X(j)}" cy="${Y(x)}" r="5" fill="${C[st(k,x)]}"><title>Day ${d[j].d}: ${f(k,x)} ${i.u}</title></circle>`).join('')+d.map((e,j)=>j%2?'':`<text x="${X(j)}" y="232" text-anchor="middle" fill="var(--mut)" font-size="11">D${e.d}</text>`).join('');
 $('#tnote').textContent=`${i.n} (${i.u}). Green band is the nominal range. Hover points for values.`}
 function game(){const done=T.reduce((s,t,j)=>s+(j&&S.tasks[j]?+t[1]:0),0),xp=S.data.length*10+done+(S.bank||0)+S.data.filter(e=>K.every(k=>!st(k,e[k]))).length*5,lv=Math.floor(xp/150),names=['Cadet','Crew member','Flight engineer','Mission specialist','Commander'];
 $('#lvl').textContent=`${names[Math.min(lv,4)]} · ${xp} XP`;$('#xpf').style.width=(xp%150)/1.5+'%';
-let s=1,d=S.data;for(let j=d.length-1;j>0&&d[j].d-d[j-1].d===1;j--)s++;$('#strk').textContent=`🔥 ${s}-day logging streak. Earn XP for logging (+10), healthy days (+5) and daily tasks (+5).`;
+let s=1,d=S.data;for(let j=d.length-1;j>0&&d[j].d-d[j-1].d===1;j--)s++;$('#strk').textContent=`📅 Mission day ${S.md} · ${S.hist.length} mission days completed (${S.hist.filter(h=>h.n>=4).length} with all tasks) · ${S.data.length} days logged · 🔥 ${s}-day logging streak. Earn XP for logging (+10), healthy days (+5) and daily tasks (+5).`;
 $('#tasks').innerHTML=T.map((t,j)=>`<label class="task"><input type="checkbox" data-t="${j}" ${S.tasks[j]?'checked':''} ${j==0?'disabled':''}> ${t[0]} <span class="mut">+${t[1]} XP</span></label>`).join('');
 $('#tasks').onchange=ev=>{const j=+ev.target.dataset.t;S.tasks[j]=ev.target.checked;save();game();toast(ev.target.checked?'+'+T[j][1]+' XP':'Task unchecked')};
 $('#haz').innerHTML=H.map(h=>`<details><summary>${h[0]}</summary><p><b>Effects:</b> ${h[1]}<br><b>Defense:</b> ${h[2]}</p></details>`).join('')}
@@ -125,14 +127,16 @@ function alarm(m){toast('⏰ '+m+' (tap to dismiss)',1);try{if(window.Notificati
 function rem(){$('#rems').innerHTML=S.rem.map((r,j)=>`<label class="task"><input type="checkbox" data-r="${j}" ${r.on?'checked':''}> ${r.n} <input type="time" data-rt="${j}" value="${r.t}" style="margin-left:auto;width:auto"></label>`).join('');$('#rems').onchange=ev=>{const d=ev.target.dataset;if(d.r!==undefined)S.rem[d.r].on=ev.target.checked;if(d.rt!==undefined)S.rem[d.rt].t=ev.target.value;save()}}
 function rep(){const e=last(),d=S.data.slice(-7),v=E[S.env];let fl=K.filter(k=>st(k,e[k])||drift(k)).map(k=>`- ${I[k].n} ${f(k,e[k])} ${I[k].u}: ${st(k,e[k])?L[st(k,e[k])]+'. '+I[k].g[st(k,e[k])-1]:'Drifting the wrong way over recent days.'}`).join('\n');return `VITALORBIT HEALTH SUMMARY FOR FLIGHT SURGEON\nMission day ${e.d} | Location: ${v[0]} | Signal delay: ${v[1]}\n\nCURRENT STATUS\n`+K.map(k=>`- ${I[k].n}: ${f(k,e[k])} ${I[k].u} [${L[st(k,e[k])]}]${drift(k)?' (drifting)':''}`).join('\n')+`\n\nFLAGGED ITEMS\n${fl||'None'}\n\nLAST ${d.length} DAYS\nday,${K.join(',')}\n`+d.map(x=>x.d+','+K.map(k=>f(k,x[k])).join(',')).join('\n')+'\n\nSelf-reported by the crew member. Not diagnostic.'}
 function csv(){return 'day,'+K.join(',')+'\n'+S.data.map(x=>x.d+','+K.map(k=>f(k,x[k])).join(',')).join('\n')}
+function newDay(){S.bank=(S.bank||0)+T.reduce((s,t,j)=>s+(j&&S.tasks[j]?+t[1]:0),0);S.hist.push({d:S.md,n:Object.keys(S.tasks).filter(j=>S.tasks[j]&&+j>0).length});S.md++;S.tasks={};save();form();all();toast('Day '+S.md+' started. XP kept')}
 function all(){home();paint();game();chart();rem();$('#rpt').value=rep()}
-$('#save').onclick=()=>{const e={d:+$('#f_d').value};let ok=true;K.forEach(k=>{const v=parseFloat($('#f_'+k).value);if(isNaN(v))ok=false;e[k]=v});if(!ok||!e.d){$('#msg').textContent='Please fill every field.';return}
-S.data=S.data.filter(x=>x.d!==e.d).concat(e).sort((a,b)=>a.d-b.d);S.tasks[0]=true;save();form();all();$('#msg').textContent='Saved.';toast('+10 XP · entry logged');show('home');scrollTo(0,0)};
-$('#reset').onclick=()=>{S.bank=(S.bank||0)+T.reduce((s,t,j)=>s+(j&&S.tasks[j]?+t[1]:0),0);S.tasks={};save();game();toast('New day started. XP kept')};
+$('#save').onclick=()=>{const e={d:+$('#f_d').value};let bad='';K.forEach(k=>{const v=parseFloat($('#f_'+k).value),r=RG[k];if(isNaN(v)||v<r[0]||v>r[1])bad=bad||I[k].n+' must be '+r[0]+'–'+r[1]+' '+I[k].u;e[k]=v});if(!e.d||e.d<1)bad=bad||'Mission day must be 1 or more';if(bad){$('#msg').textContent=bad;return}
+S.data=S.data.filter(x=>x.d!==e.d).concat(e).sort((a,b)=>a.d-b.d);S.tasks[0]=true;if(e.d>S.md)S.md=e.d;save();form();all();$('#msg').textContent='Saved.';toast('+10 XP · entry logged');show('home');scrollTo(0,0)};
+$('#reset').onclick=()=>newDay();
 $('#env').innerHTML=Object.keys(E).map(k=>`<option value="${k}">${E[k][0]}</option>`).join('');$('#env').value=S.env;$('#env').onchange=()=>{S.env=$('#env').value;save();home()};
 $('#tsel').innerHTML=K.map(k=>`<option value="${k}">${I[k].n}</option>`).join('');$('#tsel').onchange=chart;
 tabs();form();all();region('chest');show('home');
 setInterval(()=>{const n=new Date(),hm=n.toTimeString().slice(0,5),key=n.toDateString()+hm;S.rem.forEach((r,j)=>{if(r.on&&r.t===hm&&fired[j]!==key){fired[j]=key;alarm(r.n)}})},10000);
+$('#nd2').onclick=()=>newDay();
 $('#testrem').onclick=()=>alarm('Test reminder: log your vitals');
 $('#notif').onclick=()=>{try{Notification.requestPermission().then(p=>toast(p==='granted'?'Notifications on':'Notifications blocked: in-app alerts still work'))}catch(e){toast('Notifications unavailable here: in-app alerts still work')}};
 function dl(name,data){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data]));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Saved '+name)}catch(e){toast('Could not save: use Copy')}}
