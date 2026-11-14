@@ -4,8 +4,8 @@
 
 Built for the **NASA Space Apps Challenge 2026**: *Create Health Monitoring Software for Astronauts on Space Missions*.
 
- --![VitalOrbit overview](screenshot/overview.png)
-Live demo: https://youtu.be/bFwbsc9ZleY?si=dw1OsuJfI2rdfMx8 --
+ ![VitalOrbit overview](screenshot/overview.png)
+Live demo: https://youtu.be/bFwbsc9ZleY?si=dw1OsuJfI2rdfMx8 
 
 ---
 
